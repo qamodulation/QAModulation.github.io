@@ -96,6 +96,7 @@ function draw() {
   beginShape()
   for (var x = upperGraphMinX; x < upperGraphMaxX; x++) {
     if (x >= 0 && x * upperGraphXScale < 1 / (SignalFreq * 2) && SymbolCheckbox.checked) {//first signal symbol
+      SliderSignalPhase.value = 0;
       var output = sine(x * upperGraphXScale, SymbolAmplitude, CarrierFreq, SymbolPhase, CarrierBias) * square_(x * upperGraphXScale, SignalAmplitude, SignalFreq, SignalPhase, SignalBias);
       vertex(x, -output * upperGraphYScale);
     } else {
