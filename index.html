@@ -17,7 +17,7 @@
   <div style="display: flex;flex-flow: row;display: flex;align-items: flex-start;">
     <div id="WaveSection" style="display: flex;flex-flow: column;display: flex;align-items: flex-start;">
       <div id="CarrierWaveSection" style="display: flex;flex-flow: column;display: flex;align-items: flex-start;">
-        <h4>Carrier wave</h4>
+        <h4 style=" margin:0;">Carrier wave</h4>
         <label for="SliderCarrierAmplitude">Amplitude</label>
         <input type="range" min="-400" max="400" value="100" class="slider" id="SliderCarrierAmplitude"
           autocomplete="off" style="width: 300px;">
@@ -36,7 +36,8 @@
         <h5 id="CarrierWave" style="width: 300px;">Carrier wave f(x)=1*sin(1*x-0)+0</h5>
       </div>
       <div id="SignalWaveSection" style="display: flex;flex-flow: column;display: flex;align-items: flex-start;">
-        <h4>Signal wave</h4>
+        <h4 style=" margin:0;">Signal wave</h4>
+        <input type="checkbox" id="SignalCheckbox" autocomplete="off" checked>
         <label for="SliderSignalAmplitude">Amplitude</label>
         <input type="range" min="-200" max="200" value="100" class="slider" id="SliderSignalAmplitude"
           autocomplete="off" style="width: 300px;">
@@ -55,7 +56,7 @@
         <h5 id="SignalWave" style="width: 300px;">Signal wave f(x)=sgn{1*sin(1*x-0)+0}</h5>
       </div>
       <div id="SignalWaveSection" style="display: flex;flex-flow: column;display: flex;align-items: flex-start;">
-        <h4>Symbol</h4>
+        <h4 style=" margin:0;">Symbol</h4>
         <input type="checkbox" id="SymbolCheckbox" autocomplete="off" checked>
         <label for="SliderSymbolAmplitude">Amplitude</label>
         <input type="range" min="-200" max="200" value="75" class="slider" id="SliderSymbolAmplitude" autocomplete="off"
@@ -67,7 +68,7 @@
         <h5 id="SymbolText" style="width: 300px;">Symbol</h5>
       </div>
     </div>
-    <div id="sketch-div"></div>
+    <div id="sketch-div" style=" margin:0;"></div>
   </div>
   <a href="https://github.com/qamodulation/QAModulation.github.io"><img
       style="position: absolute; top: 0; right: 0; border: 0;"

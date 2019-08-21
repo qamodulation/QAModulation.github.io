@@ -10,6 +10,7 @@ var SliderSignalFrequency;
 var SliderSignalPhase;
 var SliderSignalBias;
 var SignalWaveText;
+var SignalCheckbox
 //symbol
 var SliderSymbolAmplitude;
 var SliderSymbolPhase;
@@ -32,7 +33,7 @@ var lowerLeftGraphXScale = 1 / 150;//150->1
 var lowerLeftGraphPadding = 1 / 40; // proportion of with to be left blank on both sides
 
 function setup() {
-  let canvas = createCanvas(windowWidth - 300 - 12 - 12, windowHeight);
+  let canvas = createCanvas(windowWidth - 300 - 12 - 12, windowHeight - 20);
   canvas.parent('sketch-div');
   SliderCarrierAmplitude = document.getElementById('SliderCarrierAmplitude');
   SliderCarrierFrequency = document.getElementById('SliderCarrierFrequency');
@@ -47,6 +48,7 @@ function setup() {
   SliderSymbolAmplitude = document.getElementById('SliderSymbolAmplitude');
   SliderSymbolPhase = document.getElementById('SliderSymbolPhase');
   SymbolText = document.getElementById('SymbolText');
+  SignalCheckbox = document.getElementById('SignalCheckbox');
   SymbolCheckbox = document.getElementById('SymbolCheckbox');
 }
 
@@ -94,26 +96,28 @@ function draw() {
   stroke(0);
   noFill();
   beginShape()
+  var phaseOffset = (SignalPhase / (Math.PI * 1));
   for (var x = upperGraphMinX; x < upperGraphMaxX; x++) {
-    if (x >= 0 && x * upperGraphXScale < 1 / (SignalFreq * 2) && SymbolCheckbox.checked) {//first signal symbol
-      SliderSignalPhase.value = 0;
-      var output = sine(x * upperGraphXScale, SymbolAmplitude, CarrierFreq, SymbolPhase, CarrierBias) * square_(x * upperGraphXScale, SignalAmplitude, SignalFreq, SignalPhase, SignalBias);
-      vertex(x, -output * upperGraphYScale);
+    if (SymbolCheckbox.checked && x * upperGraphXScale + phaseOffset >= 0 && x * upperGraphXScale + phaseOffset < (1 / (SignalFreq * 2))) {//first signal symbol
+      var output = sine(x * upperGraphXScale, SymbolAmplitude, CarrierFreq, SymbolPhase, CarrierBias) * (SignalCheckbox.checked ? square_(x * upperGraphXScale, SignalAmplitude, SignalFreq, SignalPhase, SignalBias) : 1);
+      vertex(x, output * upperGraphYScale);
     } else {
-      var output = sine(x * upperGraphXScale, CarrierAmplitude, CarrierFreq, CarrierPhase, CarrierBias) * square_(x * upperGraphXScale, SignalAmplitude, SignalFreq, SignalPhase, SignalBias);
-      vertex(x, -output * upperGraphYScale);
+      var output = sine(x * upperGraphXScale, CarrierAmplitude, CarrierFreq, CarrierPhase, CarrierBias) * (SignalCheckbox.checked ? square_(x * upperGraphXScale, SignalAmplitude, SignalFreq, SignalPhase, SignalBias) : 1);
+      vertex(x, output * upperGraphYScale);
     }
   }
   endShape();
   // upper graph data blue signal (signal is a square wave, aka 101010...)
   stroke(0, 0, 200, 100);
   noFill();
-  beginShape()
-  for (var x = upperGraphMinX; x < upperGraphMaxX; x++) {
-    var output = square_(x * upperGraphXScale, SignalAmplitude, SignalFreq, SignalPhase, SignalBias);
-    vertex(x, -output * upperGraphYScale);
+  if (SignalCheckbox.checked) {
+    beginShape()
+    for (var x = upperGraphMinX; x < upperGraphMaxX; x++) {
+      var output = square_(x * upperGraphXScale, SignalAmplitude, SignalFreq, SignalPhase, SignalBias);
+      vertex(x, output * upperGraphYScale);
+    }
+    endShape();
   }
-  endShape();
   // labels
   textFont('Georgia');
   fill(0);
@@ -132,6 +136,7 @@ function draw() {
 
 
   /* CONSTELATION DIAGRAM LEFT */
+  //TODO: improve draging
   push();
   translate(width / 4, height - height / 4);
 
@@ -188,12 +193,7 @@ function draw() {
     if (mouseIsPressed) {
       touchMe = true;
       SliderSymbolAmplitude.value = sqrt(sq(x * lowerRightGraphXScale) + sq(y / lowerRightGraphYScale)) * 100;
-      if (x < 0) {
-        SliderSymbolPhase.value = 100 * (atan2(x * lowerRightGraphXScale, y / lowerRightGraphYScale) + 2 * Math.PI - Math.PI / 2);
-      } else {
-        SliderSymbolPhase.value = 100 * (atan2(x * lowerRightGraphXScale, y / lowerRightGraphYScale) - Math.PI / 2);
-      }
-      SliderSymbolPhase.value = 100 * (atan2(x * lowerRightGraphXScale, y / lowerRightGraphYScale) - Math.PI / 2);
+      SliderSymbolPhase.value = 100 * myatan2(x * lowerRightGraphXScale, -y / lowerRightGraphYScale);//+ Math.PI / 2;
       SymbolAmplitude = SliderSymbolAmplitude.value / 100;
       SymbolPhase = SliderSymbolPhase.value / 100;
       angleConstelation = SymbolPhase + Math.PI / 2;
@@ -213,7 +213,7 @@ function draw() {
     stroke(255);
     text("Drag me!", dotX, dotY - dh);
   }
-  //text(atan2(x * lowerRightGraphXScale, y / lowerRightGraphYScale), dotX, dotY - dh);//debug angle
+  //text(myatan2(x * lowerRightGraphXScale, -y / lowerRightGraphYScale), dotX, dotY - dh);//debug angle
   // labels
   textFont('Georgia');
   fill(0);
@@ -273,14 +273,13 @@ function draw() {
   //line (Amplitude)
   stroke(150);
   line(0, 0, xConstelation / lowerRightGraphXScale, yConstelation * lowerRightGraphYScale);
-
   stroke(255);
   fill(0);
   textAlign(CENTER);
   textSize(15)
   text("A " + SymbolAmplitude, 1.5 * radiusConstelation * lowerRightGraphYScale / 2 * sin(angleConstelation), 1.5 * radiusConstelation * lowerRightGraphYScale / 2 * cos(angleConstelation));
 
-  //TODO at phaseSlider = 0 visibility problem
+  //  display phase, but in a way that doesn't overlap amplitude
   var phaseToCloseToAmplitudeOffset = inRange(SymbolPhase, -.3, .3) ? -30 : 0;
   if (0 <= SymbolAmplitude) {
     var shiftedAngle = angleConstelation - Math.PI / 2
@@ -334,7 +333,19 @@ function inRange(value, min, max) {
   }
   return false
 }
+function myatan2(x, y) {
+  if (x === 0 && y > 0)
+    return Math.PI / 2;
+  if (x === 0 && y < 0)
+    return 3 * Math.PI / 2;
+  if (x > 0 && y >= 0) // |_
+    return Math.atan(y / x);
+  if (x < 0) // -|
+    return Math.atan(y / x) + Math.PI;
+  if (x > 0 && y < 0) // |▔
+    return Math.atan(y / x) + 2 * Math.PI;
+}
 
 function windowResized() {
-  resizeCanvas(windowWidth - 300 - 12 - 12, windowHeight);
+  resizeCanvas(windowWidth - 300 - 12 - 12, windowHeight - 20);
 }
