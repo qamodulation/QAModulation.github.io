@@ -17,7 +17,8 @@ var SliderSymbolPhase;
 var SymbolText;
 var SymbolCheckbox
 //interaction
-var touchMe = false;
+var touchMePrompt = true;
+var wasPressedlastFrame = false;
 /// config //
 //
 var upperGraphYScale = 100;//1->100
@@ -185,13 +186,14 @@ function draw() {
   var x = (mouseX - width / 4);
   var y = (mouseY - (height - (height / 4)));
   //if mouse on top of the red dot
-  if (mouseX - width / 4 - dotX > - dw * 2 &&
+  if (wasPressedlastFrame || mouseX - width / 4 - dotX > - dw * 2 &&
     mouseX - width / 4 - dotX < + dw * 2 &&
     mouseY - (height - height / 4) - dotY > - dh * 2 &&
     mouseY - (height - height / 4) - dotY < + dh * 2) {
     stroke(0, 255, 0);//green
     if (mouseIsPressed) {
-      touchMe = true;
+      touchMePrompt = false;
+      wasPressedlastFrame = true;
       SliderSymbolAmplitude.value = sqrt(sq(x * lowerRightGraphXScale) + sq(y / lowerRightGraphYScale)) * 100;
       SliderSymbolPhase.value = 100 * myatan2(x * lowerRightGraphXScale, -y / lowerRightGraphYScale);//+ Math.PI / 2;
       SymbolAmplitude = SliderSymbolAmplitude.value / 100;
@@ -206,9 +208,12 @@ function draw() {
       dh = 15;
     }
   }
-  ellipse(dotX, dotY, dw, dh);
+  if (!mouseIsPressed)
+    wasPressedlastFrame = false;
+  ellipse(dotX, dotY, dw, dh);//dot
+  // 
   textAlign(CENTER);
-  if (!touchMe) {
+  if (touchMePrompt) {
     fill(0);
     stroke(255);
     text("Drag me!", dotX, dotY - dh);
